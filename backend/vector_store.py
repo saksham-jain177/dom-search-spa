@@ -96,9 +96,9 @@ class VectorStore:
             
         print(f"✅ Indexed {len(chunks)} chunks to Pinecone")
     
-    def search(self, query: str, limit: int = 10) -> List[Dict]:
+    def search(self, query: str, limit: int = 10, url_filter: str = None) -> List[Dict]:
         """
-        Perform semantic search
+        Perform semantic search with optional URL filtering
         """
         if self.index is None:
             self.index = self.pc.Index(self.index_name)
@@ -106,11 +106,17 @@ class VectorStore:
         # Generate query embedding
         query_embedding = self.model.encode(query, show_progress_bar=False)
         
+        # Prepare filter
+        filter_dict = {}
+        if url_filter:
+            filter_dict["url"] = {"$eq": url_filter}
+        
         # Search
         results = self.index.query(
             vector=query_embedding.tolist(),
             top_k=limit,
-            include_metadata=True
+            include_metadata=True,
+            filter=filter_dict if url_filter else None
         )
         
         # Format results
@@ -124,7 +130,8 @@ class VectorStore:
                 "percentage": min(int(score * 100), 100),
                 "dom_path": match['metadata'].get("dom_path", ""),
                 "chunk_text": match['metadata'].get("content", ""),
-                "chunk_html": match['metadata'].get("html", "")
+                "chunk_html": match['metadata'].get("html", ""),
+                "url": match['metadata'].get("url", "")
             })
         
         return formatted_results

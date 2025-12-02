@@ -128,19 +128,62 @@ async def search(search_request: SearchRequest, request: Request):
         text_chunks = chunker.chunk_content(html_chunks)
         logger.info(f"📦 Created {len(text_chunks)} chunks")
         
+        # Normalize URL (strip trailing slash) to ensure consistency
+        normalized_url = search_request.url.rstrip('/')
+        
         # Step 5: Check if URL already indexed (save Pinecone credits)
-        if vector_store.url_exists(search_request.url):
-            logger.info(f"♻️  URL already indexed, skipping re-indexing to save credits")
+        if vector_store.url_exists(normalized_url):
+            logger.info(f"♻️  URL already indexed, skipping re-indexing")
         else:
             # Index in vector database
             logger.info("💾 Indexing chunks...")
-            vector_store.index_chunks(text_chunks, search_request.url)
+            vector_store.index_chunks(text_chunks, normalized_url)
+            # Wait a moment for Pinecone eventual consistency
+            import time
+            time.sleep(2)
         
         # Step 6: Semantic search
         logger.info("🔎 Performing semantic search...")
-        results = vector_store.search(search_request.query, limit=10)
         
-        logger.info(f"✅ Found {len(results)} results")
+        # Fetch more results initially to allow for deduplication
+        # Use the normalized URL for filtering
+        raw_results = vector_store.search(search_request.query, limit=20, url_filter=normalized_url)
+        
+        # Fallback: If strict filter returns nothing, try broad search to debug
+        if not raw_results:
+            logger.warning(f"⚠️ Strict filter found 0 results for {normalized_url}. Trying broad search...")
+            broad_results = vector_store.search(search_request.query, limit=10)
+            
+            # Check if we have matches that were just missed due to URL mismatch
+            for res in broad_results:
+                if res.get('url', '').rstrip('/') == normalized_url:
+                    raw_results.append(res)
+            
+            if raw_results:
+                logger.info(f"💡 Recovered {len(raw_results)} results via broad search")
+            else:
+                logger.info(f"❌ Broad search found results for: {[r.get('url') for r in broad_results]}")
+
+        # Deduplicate results based on content
+        
+        # Deduplicate results based on content
+        results = []
+        seen_content = set()
+        
+        for res in raw_results:
+            # Create a signature by normalizing whitespace
+            # This handles cases where HTML parsing might leave variable whitespace
+            content_signature = " ".join(res['chunk_text'].split())
+            
+            if content_signature not in seen_content:
+                results.append(res)
+                seen_content.add(content_signature)
+            
+            # Stop once we have 10 unique results
+            if len(results) >= 10:
+                break
+        
+        logger.info(f"✅ Found {len(results)} unique results")
         
         # Step 7: Return response
         response = SearchResponse(

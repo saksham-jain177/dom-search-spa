@@ -1,8 +1,8 @@
-# Semantic Search SPA 🔍
+# Semantic Search SPA
 
 A powerful, AI-driven search tool that helps you find exactly what you're looking for within any website. Simply enter a URL and a question, and watch it find the most relevant content!
 
-## 🌟 Key Features
+## Key Features
 
 - **Smart Search**: Uses Artificial Intelligence (AI) to understand the *meaning* of your query, not just keyword matching.
 - **Deep Content Analysis**: Breaks down websites into small, meaningful chunks (500 tokens) to find precise answers.
@@ -16,7 +16,7 @@ A powerful, AI-driven search tool that helps you find exactly what you're lookin
   - **Input Validation**: Ensures URLs and queries are correctly formatted.
 - **Modern UI**: Beautiful dark mode design with helpful tooltips.
 
-## 🚀 Getting Started (Simple Guide)
+## Getting Started (Simple Guide)
 
 Follow these steps to run the application on your computer.
 
@@ -72,7 +72,7 @@ Follow these steps to run the application on your computer.
     ```
 5.  Open your browser and go to: **http://localhost:3000**
 
-## 📖 How to Use
+## How to Use
 
 1.  **Enter URL**: Paste the full address of the website you want to search (e.g., `https://en.wikipedia.org/wiki/Artificial_intelligence`).
 2.  **Enter Query**: Type your question or keywords (e.g., "What is machine learning?").
@@ -83,7 +83,7 @@ Follow these steps to run the application on your computer.
     - **Technical Details**: Hover over the "DOM Path" or "Relevance Score" for more info.
     - **Raw HTML**: Click "Show Raw HTML" to see the underlying code.
 
-## 🛠️ Technical Architecture
+## Technical Architecture
 
 - **Frontend**: Next.js (React), TypeScript, CSS Modules.
 - **Backend**: FastAPI (Python).
@@ -96,14 +96,14 @@ Follow these steps to run the application on your computer.
   - **Cachetools**: In-memory caching.
   - **Validators**: Input sanitization.
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 - **"Rate Limit Exceeded"**: You are making too many requests too fast. Wait a minute.
 - **"Invalid URL"**: Make sure your URL starts with `http://` or `https://`.
 - **Backend won't start**: Check if you created the `.env` file with your API Key.
 - **Frontend error**: Ensure the backend terminal is running and shows no errors.
 
-## 📝 API Documentation
+## API Documentation
 
 The backend provides automatic documentation at: **http://localhost:8000/docs**
 
