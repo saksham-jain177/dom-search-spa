@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import SearchBar from '@/components/SearchBar'
 import ResultCard from '@/components/ResultCard'
 import styles from '@/styles/Home.module.css'
+import ScoreDistribution from '@/components/ScoreDistribution'
+import ResultsTable from '@/components/ResultsTable'
 
 interface SearchResult {
     score: number
@@ -10,9 +12,8 @@ interface SearchResult {
     dom_path: string
     chunk_text: string
     chunk_html: string
+    url?: string
 }
-
-import ResultsTable from '@/components/ResultsTable'
 
 export default function Home() {
     const [results, setResults] = useState<SearchResult[]>([])
@@ -22,6 +23,8 @@ export default function Home() {
     const [theme, setTheme] = useState('dark')
     const [apiHealth, setApiHealth] = useState<'healthy' | 'unhealthy'>('healthy')
     const [viewMode, setViewMode] = useState<'card' | 'table'>('card')
+    const [showBorders, setShowBorders] = useState(false)
+    const [showViz, setShowViz] = useState(false)
 
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme')
@@ -121,6 +124,14 @@ export default function Home() {
 
                             <div className={styles.viewToggle}>
                                 <button
+                                    className={`${styles.toggleButton} ${showViz ? styles.toggleButtonActive : ''}`}
+                                    onClick={() => setShowViz(!showViz)}
+                                    title="Toggle Visualization"
+                                    style={{ marginRight: '8px' }}
+                                >
+                                    📊 Viz
+                                </button>
+                                <button
                                     className={`${styles.toggleButton} ${viewMode === 'card' ? styles.toggleButtonActive : ''}`}
                                     onClick={() => setViewMode('card')}
                                 >
@@ -135,6 +146,8 @@ export default function Home() {
                             </div>
                         </div>
 
+                        {showViz && <ScoreDistribution results={results} />}
+
                         {viewMode === 'card' ? (
                             <div className={styles.resultsGrid}>
                                 {results.map((result, index) => (
@@ -146,7 +159,18 @@ export default function Home() {
                                 ))}
                             </div>
                         ) : (
-                            <ResultsTable results={results} />
+                            <>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+                                    <button
+                                        className={`${styles.toggleButton} ${showBorders ? styles.toggleButtonActive : ''}`}
+                                        onClick={() => setShowBorders(!showBorders)}
+                                        style={{ border: '1px solid var(--border-color)' }}
+                                    >
+                                        {showBorders ? 'Hide Borders' : 'Show Borders'}
+                                    </button>
+                                </div>
+                                <ResultsTable results={results} showBorders={showBorders} />
+                            </>
                         )}
                     </div>
                 )}
