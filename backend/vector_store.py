@@ -30,7 +30,9 @@ class VectorStore:
     def model(self):
         if self._model is None:
             print("⏳ Loading SentenceTransformer model...")
-            self._model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+            # Force CPU usage and optimize for low memory
+            self._model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2', device='cpu')
+            self._model.max_seq_length = 256
             print("✅ Model loaded")
         return self._model
     
@@ -72,7 +74,7 @@ class VectorStore:
             
         # Generate embeddings
         texts = [chunk['content'] for chunk in chunks]
-        embeddings = self.model.encode(texts, show_progress_bar=False)
+        embeddings = self.model.encode(texts, show_progress_bar=False, batch_size=8)
         
         # Prepare vectors for upsert
         vectors = []
@@ -113,7 +115,7 @@ class VectorStore:
         self._ensure_index()
             
         # Generate query embedding
-        query_embedding = self.model.encode(query, show_progress_bar=False)
+        query_embedding = self.model.encode(query, show_progress_bar=False, batch_size=8)
         
         # Prepare filter
         filter_dict = {}
