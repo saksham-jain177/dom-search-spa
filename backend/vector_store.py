@@ -4,6 +4,7 @@ from typing import List, Dict
 from tqdm import tqdm
 import os
 import time
+import gc
 
 class VectorStore:
     """Pinecone vector database wrapper"""
