@@ -6,7 +6,9 @@ httpx==0.25.1
 beautifulsoup4==4.12.2
 lxml==4.9.3
 sentence-transformers==2.7.0
-pinecone
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.5.0+cpu
+pinecone-client[grpc]==5.0.1
 python-dotenv==1.0.0
 tqdm==4.66.1
 pydantic==2.5.0
