@@ -68,7 +68,7 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:3001", 
         "http://localhost:3002",
-        # TODO: Add your Vercel URL after deployment
+        "https://dom-search-spa.vercel.app",  # Vercel production
     ],
     allow_credentials=True,
     allow_methods=["*"],
