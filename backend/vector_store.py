@@ -68,43 +68,61 @@ class VectorStore:
     
     def index_chunks(self, chunks: List[Dict], source_url: str):
         """
-        Index chunks into Pinecone
+        Index chunks into Pinecone in batches to save memory
         """
         self._ensure_index()
-            
-        # Generate embeddings
-        texts = [chunk['content'] for chunk in chunks]
-        embeddings = self.model.encode(texts, show_progress_bar=False, batch_size=8)
         
-        # Prepare vectors for upsert
-        vectors = []
-        for i, chunk in enumerate(chunks):
-            # Create a unique ID for the vector
-            vector_id = f"{source_url}_{i}"
-            
-            # Metadata must be simple types
-            metadata = {
-                "content": chunk['content'],
-                "html": chunk['html'],
-                "dom_path": chunk['dom_path'],
-                "url": source_url,
-                "position": chunk['position']
-            }
-            
-            vectors.append({
-                "id": vector_id,
-                "values": embeddings[i].tolist(),
-                "metadata": metadata
-            })
-            
-        # Upsert in batches of 100
-        batch_size = 100
-        total_batches = (len(vectors) + batch_size - 1) // batch_size
+        # Process in small batches to keep memory usage low
+        # Batch size of 32 is safe for 512MB RAM
+        process_batch_size = 32
         
-        print(f"📤 Uploading {len(chunks)} chunks in {total_batches} batches...")
-        for i in tqdm(range(0, len(vectors), batch_size), desc="Indexing", unit="batch"):
-            batch = vectors[i:i + batch_size]
-            self.index.upsert(vectors=batch)
+        print(f"📤 Processing {len(chunks)} chunks in batches of {process_batch_size}...")
+        
+        for i in tqdm(range(0, len(chunks), process_batch_size), desc="Indexing", unit="batch"):
+            # 1. Get batch of chunks
+            chunk_batch = chunks[i:i + process_batch_size]
+            
+            # 2. Extract texts
+            texts = [chunk['content'] for chunk in chunk_batch]
+            
+            # 3. Encode just this batch
+            # batch_size=8 internal to model.encode is fine, but we only pass 32 items total
+            embeddings = self.model.encode(texts, show_progress_bar=False, batch_size=8)
+            
+            # 4. Prepare vectors
+            vectors = []
+            for j, chunk in enumerate(chunk_batch):
+                # Global index for ID
+                global_idx = i + j
+                vector_id = f"{source_url}_{global_idx}"
+                
+                metadata = {
+                    "content": chunk['content'],
+                    "html": chunk['html'],
+                    "dom_path": chunk['dom_path'],
+                    "url": source_url,
+                    "position": chunk['position']
+                }
+                
+                vectors.append({
+                    "id": vector_id,
+                    "values": embeddings[j].tolist(),
+                    "metadata": metadata
+                })
+            
+            # 5. Upsert this batch immediately
+            try:
+                self.index.upsert(vectors=vectors)
+            except Exception as e:
+                print(f"⚠️ Error upserting batch {i}: {e}")
+                # Retry once
+                time.sleep(1)
+                self.index.upsert(vectors=vectors)
+            
+            # Explicitly clear large variables
+            del texts
+            del embeddings
+            del vectors
             
         print(f"✅ Indexed {len(chunks)} chunks to Pinecone")
     
