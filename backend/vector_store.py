@@ -34,8 +34,11 @@ class VectorStore:
             print("✅ Model loaded")
         return self._model
     
-    def initialize_schema(self):
-        """Create the index if it doesn't exist"""
+    def _ensure_index(self):
+        """Lazy load index and create if doesn't exist"""
+        if self.index is not None:
+            return
+
         try:
             existing_indexes = [i.name for i in self.pc.list_indexes()]
             
@@ -65,8 +68,7 @@ class VectorStore:
         """
         Index chunks into Pinecone
         """
-        if self.index is None:
-            self.index = self.pc.Index(self.index_name)
+        self._ensure_index()
             
         # Generate embeddings
         texts = [chunk['content'] for chunk in chunks]
@@ -108,8 +110,7 @@ class VectorStore:
         """
         Perform semantic search with optional URL filtering
         """
-        if self.index is None:
-            self.index = self.pc.Index(self.index_name)
+        self._ensure_index()
             
         # Generate query embedding
         query_embedding = self.model.encode(query, show_progress_bar=False)

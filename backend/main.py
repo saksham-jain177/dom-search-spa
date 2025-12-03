@@ -31,11 +31,10 @@ vector_store = VectorStore()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    try:
-        vector_store.initialize_schema()
-        logger.info("✅ Vector store schema initialized")
-    except Exception as e:
-        logger.error(f"❌ Failed to initialize schema: {e}")
+    # Startup
+    # Note: We skip synchronous schema initialization here to prevent startup timeouts
+    # The schema will be checked lazily on the first request
+    logger.info("🚀 Server starting up...")
     
     yield
     
