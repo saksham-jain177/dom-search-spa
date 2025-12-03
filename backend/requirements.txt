@@ -6,8 +6,6 @@ httpx==0.25.1
 beautifulsoup4==4.12.2
 lxml==4.9.3
 sentence-transformers==2.7.0
-transformers==4.40.0
-torch==2.1.1
 pinecone
 python-dotenv==1.0.0
 tqdm==4.66.1
