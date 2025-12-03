@@ -4,8 +4,7 @@ httpx==0.25.1
 beautifulsoup4==4.12.2
 lxml==4.9.3
 --extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.1.1+cpu
-sentence-transformers==2.7.0
+sentence-transformers==2.2.2
 pinecone>=3.0.0
 python-dotenv==1.0.0
 tqdm==4.66.1
