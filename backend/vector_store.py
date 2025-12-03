@@ -22,9 +22,17 @@ class VectorStore:
         self.index_name = "semantic-search-demo"
         self.index = None
         
-        # Load sentence transformer model for embeddings
-        self.model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+        # Lazy load model
+        self._model = None
         self.dim = 384  # all-MiniLM-L6-v2 embedding dimension
+
+    @property
+    def model(self):
+        if self._model is None:
+            print("⏳ Loading SentenceTransformer model...")
+            self._model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+            print("✅ Model loaded")
+        return self._model
     
     def initialize_schema(self):
         """Create the index if it doesn't exist"""

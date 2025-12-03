@@ -7,9 +7,15 @@ class TextChunker:
     """Chunks text into 500-token segments using bert-base-uncased tokenizer"""
     
     def __init__(self, max_tokens: int = 500, overlap_tokens: int = 50):
-        self.tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+        self._tokenizer = None
         self.max_tokens = max_tokens
         self.overlap_tokens = overlap_tokens
+
+    @property
+    def tokenizer(self):
+        if self._tokenizer is None:
+            self._tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+        return self._tokenizer
     
     def chunk_content(self, html_chunks: List[HTMLChunk]) -> List[Dict]:
         """
