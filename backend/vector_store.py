@@ -73,8 +73,11 @@ class VectorStore:
         self._ensure_index()
         
         # Process in small batches to keep memory usage low
-        # Batch size of 32 is safe for 512MB RAM
-        process_batch_size = 32
+        # Batch size of 10 is extremely safe for 512MB RAM
+        process_batch_size = 10
+        
+        # Trigger model load before progress bar to keep logs clean
+        _ = self.model
         
         print(f"📤 Processing {len(chunks)} chunks in batches of {process_batch_size}...")
         
@@ -86,7 +89,7 @@ class VectorStore:
             texts = [chunk['content'] for chunk in chunk_batch]
             
             # 3. Encode just this batch
-            # batch_size=8 internal to model.encode is fine, but we only pass 32 items total
+            # batch_size=8 internal to model.encode is fine
             embeddings = self.model.encode(texts, show_progress_bar=False, batch_size=8)
             
             # 4. Prepare vectors
@@ -119,10 +122,11 @@ class VectorStore:
                 time.sleep(1)
                 self.index.upsert(vectors=vectors)
             
-            # Explicitly clear large variables
+            # Explicitly clear large variables and force GC
             del texts
             del embeddings
             del vectors
+            gc.collect()
             
         print(f"✅ Indexed {len(chunks)} chunks to Pinecone")
     
