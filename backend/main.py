@@ -60,9 +60,16 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 response_cache = TTLCache(maxsize=100, ttl=3600)
 
 # CORS configuration
+# IMPORTANT: After deploying to Vercel, add your exact Vercel URL here
+# Example: "https://my-app-abc123.vercel.app"
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001", 
+        "http://localhost:3002",
+        # TODO: Add your Vercel URL after deployment
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

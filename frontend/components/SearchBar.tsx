@@ -61,7 +61,8 @@ export default function SearchBar({ onResults, onError }: SearchBarProps) {
         onError('') // Clear previous errors
 
         try {
-            const response = await fetch('http://localhost:8000/search', {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+            const response = await fetch(`${apiUrl}/search`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
